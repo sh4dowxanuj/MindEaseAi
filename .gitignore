@@ -1,0 +1,88 @@
+.gradle/
+/build/
+local.properties
+.gradle/daemon/
+.gradle/caches/
+
+# Android Studio
+.idea/
+*.iml
+captures/
+
+# Keystores (never commit)
+*.jks
+*.keystore
+
+# Logs
+*.log
+
+# Google services (keep out of public repos if possible)
+# google-services.json
+
+# OS
+.DS_Store
+Thumbs.db
+# Android/IntelliJ
+*.iml
+.gradle/
+/local.properties
+/.idea/
+.DS_Store
+/build/
+# Ignore all build artifacts
+/app/build/*
+# Un-ignore APK outputs for all variants under app/build/outputs/apk
+!/app/build/outputs/
+!/app/build/outputs/apk/
+!/app/build/outputs/apk/**
+# Ignore all other APKs everywhere else
+*.ap_ 
+*.dex
+*.class
+*.jar
+*.war
+*.ear
+*.so
+*.obj
+*.dll
+*.pdb
+*.bin
+*.lock
+*.log
+*.hprof
+*.orig
+*.rej
+*.swp
+*.swo
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.save
+*.sublime-workspace
+*.sublime-project
+output.json
+# Keystore files
+*.jks
+*.keystore
+# Google Services (Firebase) files
+app/google-services.json
+# Android Studio Navigation editor temp files
+.navigation/
+# Crashlytics config
+fabric.properties
+# Fastlane metadata, build and screenshots
+fastlane/metadata/
+fastlane/screenshots/
+fastlane/test_output/
+fastlane/report.xml
+# NDK
+obj/
+# VS Code
+.vscode/
+# Build reports (keep error/problem reports for debugging)
+!/build/reports/
+!/build/reports/problems/
+!/build/reports/problems/problems-report.html

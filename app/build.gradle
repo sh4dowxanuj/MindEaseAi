@@ -1,0 +1,140 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
+    id 'dagger.hilt.android.plugin'
+}
+
+def geminiApiKey = project.findProperty('GEMINI_API_KEY') ?: ""
+
+android {
+    namespace = 'com.mindeaseai'
+    compileSdk = 34
+
+    // Lint options for code quality and faster builds (AGP 8+ DSL)
+    lint {
+        abortOnError = false
+        checkReleaseBuilds = false
+        warningsAsErrors = true
+        disable += ['MissingTranslation', 'UnusedResources']
+    }
+
+    // Packaging options to exclude unused files and reduce APK size (AGP 8+ DSL)
+    packaging {
+        resources {
+            excludes += ['META-INF/DEPENDENCIES',
+                         'META-INF/LICENSE',
+                         'META-INF/LICENSE.txt',
+                         'META-INF/license.txt',
+                         'META-INF/NOTICE',
+                         'META-INF/NOTICE.txt',
+                         'META-INF/notice.txt',
+                         'META-INF/ASL2.0']
+        }
+    }
+
+    defaultConfig {
+        applicationId "com.mindeaseai"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField "String", "GEMINI_API_KEY", "\"${geminiApiKey}\""
+    // Room schema export configuration handled via KAPT arguments below
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled = true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            shrinkResources = true // Remove unused resources in release builds
+            // Enable signing config for release builds (replace with your keystore info)
+            // signingConfig signingConfigs.release
+            // Enable PNG crunching for smaller images
+            crunchPngs = true
+            // Enable resource compression
+            zipAlignEnabled = true
+            // Enable R8 full mode for further optimization
+            // Uncomment the following line to enable R8 full mode (if supported by your Gradle version)
+            // fullMode true
+        }
+    }
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+        // Enable view binding if using XML layouts
+        // viewBinding = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = '1.5.11'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+        }
+    }
+    // Note: Variant output renaming and custom tasks have been removed for AGP 8+ compatibility
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.7.0')
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
+    implementation 'com.google.android.gms:play-services-auth:20.6.0'
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.activity:activity-compose:1.8.2'
+    implementation 'androidx.compose.ui:ui:1.6.0'
+    implementation 'androidx.compose.material3:material3:1.2.0'
+    implementation 'androidx.compose.material:material-icons-extended:1.6.0'
+    implementation 'androidx.compose.ui:ui-tooling-preview:1.6.0'
+    implementation 'androidx.navigation:navigation-compose:2.7.7'
+    implementation 'androidx.room:room-runtime:2.6.1'
+    implementation 'androidx.room:room-ktx:2.6.1'
+    kapt 'androidx.room:room-compiler:2.6.1'
+    implementation 'com.google.dagger:hilt-android:2.51.1'
+    kapt 'com.google.dagger:hilt-android-compiler:2.51.1'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'com.google.android.material:material:1.12.0'
+    // Gemini API integration should use REST (Retrofit/OkHttp) or official SDK if available
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation "androidx.datastore:datastore-preferences:1.0.0"
+    // Other dependencies as needed
+    implementation "androidx.hilt:hilt-navigation-compose:1.2.0"
+    // WorkManager for reliable background work (daily tips)
+    implementation "androidx.work:work-runtime-ktx:2.9.1"
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+    testImplementation 'org.robolectric:robolectric:4.11.1'
+    testImplementation 'androidx.test:core:1.5.0'
+    testImplementation "androidx.work:work-testing:2.9.1"
+}
+
+
+apply plugin: 'com.google.gms.google-services'
+
+// KAPT incremental build and error type optimizations
+kapt {
+    useBuildCache = true
+    correctErrorTypes = true
+    mapDiagnosticLocations = true
+    arguments {
+        arg("room.schemaLocation", "$projectDir/schemas")
+        arg("room.incremental", "true")
+    }
+}
