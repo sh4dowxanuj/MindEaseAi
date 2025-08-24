@@ -5,7 +5,67 @@ plugins {
     id 'dagger.hilt.android.plugin'
 }
 
-def geminiApiKey = project.findProperty('GEMINI_API_KEY') ?: ""
+// Load Gemini API key with a clear precedence order (do NOT hardcode secrets):
+// 1. Environment variable GEMINI_API_KEY
+// 2. local.properties (NOT committed)
+// 3. gradle.properties (discouraged for real secrets if committed)
+// If still blank, BuildConfig.GEMINI_API_KEY will be an empty string and the app will surface a UI error.
+def resolveGeminiApiKey = {
+    // Environment variable
+    def envKey = System.getenv("GEMINI_API_KEY")
+    if (envKey && !envKey.trim().isEmpty()) return envKey.trim()
+
+    // .env file (developer convenience). Lines like GEMINI_API_KEY=your-key (quotes optional)
+    def dotEnv = rootProject.file('.env')
+    if (dotEnv.exists()) {
+        try {
+            def lines = dotEnv.readLines('UTF-8')
+            for (l in lines) {
+                def line = l.trim()
+                if (!line || line.startsWith('#')) continue
+                if (line.startsWith('GEMINI_API_KEY=')) {
+                    def value = line.substring('GEMINI_API_KEY='.length()).trim()
+                    if (value.startsWith('"') && value.endsWith('"') && value.length() > 1) {
+                        value = value.substring(1, value.length()-1)
+                    }
+                    if (value.startsWith("'") && value.endsWith("'") && value.length() > 1) {
+                        value = value.substring(1, value.length()-1)
+                    }
+                    if (value) return value
+                }
+            }
+        } catch (Exception ignored) {
+            // Silently ignore .env parsing issues
+        }
+    }
+
+    // local.properties (common for Android secrets locally)
+    def localPropsFile = rootProject.file('local.properties')
+    if (localPropsFile.exists()) {
+        def p = new Properties()
+        localPropsFile.withInputStream { p.load(it) }
+        def lp = p.getProperty('GEMINI_API_KEY')
+        if (lp && !lp.trim().isEmpty()) return lp.trim()
+    }
+
+    // gradle.properties (only if explicitly added locally; avoid committing secrets)
+    def gradlePropsFile = rootProject.file('gradle.properties')
+    if (gradlePropsFile.exists()) {
+        def p = new Properties()
+        gradlePropsFile.withInputStream { p.load(it) }
+        def gp = p.getProperty('GEMINI_API_KEY')
+        if (gp && !gp.trim().isEmpty()) return gp.trim()
+    }
+    return "" // fallback
+}
+def geminiApiKey = resolveGeminiApiKey()
+if (geminiApiKey == "") {
+    logger.lifecycle("[MindEaseAI] GEMINI_API_KEY not configured (env > .env > local.properties > gradle.properties). AI features will be disabled at runtime.")
+} else {
+    // Mask all but first and last 3 chars for safety in logs
+    def masked = geminiApiKey.length() > 8 ? geminiApiKey.substring(0,3) + ("*" * (geminiApiKey.length()-6)) + geminiApiKey.substring(geminiApiKey.length()-3) : "***"
+    logger.lifecycle("[MindEaseAI] GEMINI_API_KEY loaded (len=${geminiApiKey.length()}): ${masked}")
+}
 
 android {
     namespace = 'com.mindeaseai'
