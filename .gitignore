@@ -16,6 +16,8 @@ captures/
 # Logs
 *.log
 
+# Environment files
+
 # Google services (keep out of public repos if possible)
 # google-services.json
 
@@ -86,3 +88,6 @@ obj/
 !/build/reports/
 !/build/reports/problems/
 !/build/reports/problems/problems-report.html
+.gitignore
+.env
+.env
