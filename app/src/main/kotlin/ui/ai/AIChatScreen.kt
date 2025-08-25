@@ -25,8 +25,7 @@ fun AIChatScreen(
     isLoading: Boolean,
     errorMessage: String?,
     showGreeting: Boolean = false,
-    userName: String? = null,
-    onLogout: (() -> Unit)? = null
+    userName: String? = null
 ) {
     var userInput by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -66,7 +65,6 @@ fun AIChatScreen(
                 messages = messages,
                 showGreeting = showGreeting,
                 userName = userName,
-                onLogout = onLogout,
                 modifier = Modifier.weight(1f)
             )
             

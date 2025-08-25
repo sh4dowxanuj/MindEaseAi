@@ -29,9 +29,17 @@ fun AppNavigation() {
 
     androidx.compose.runtime.LaunchedEffect(isAuthenticated) {
         val currentRoute = navController.currentBackStackEntry?.destination?.route
-        if (isAuthenticated && currentRoute != "dashboard") {
-            navController.navigate("dashboard") {
-                popUpTo(0) { inclusive = true }
+        if (isAuthenticated) {
+            if (currentRoute != "dashboard") {
+                navController.navigate("dashboard") {
+                    popUpTo(0) { inclusive = true }
+                }
+            }
+        } else {
+            if (currentRoute != "login") {
+                navController.navigate("login") {
+                    popUpTo(0) { inclusive = true }
+                }
             }
         }
     }
@@ -100,17 +108,18 @@ fun AppNavigation() {
             )
         }
         composable("dashboard") {
+            val authVm: com.mindeaseai.auth.AuthViewModel = hiltViewModel()
             DashboardScreen(
                 onNavigate = { navController.navigate(it) },
-                errorMessage = error
+                errorMessage = error,
+                onLogout = { authVm.logout() }
             )
         }
         composable("ai_chat") {
             val authVm: com.mindeaseai.auth.AuthViewModel = hiltViewModel()
             val userName = remember { authVm.getUserEmailOrName() }
             AIChatFlow(
-                userName = userName,
-                onLogout = { authVm.logout() }
+                userName = userName
             )
         }
         composable("daily_tips") {

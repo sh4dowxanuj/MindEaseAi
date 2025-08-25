@@ -11,8 +11,7 @@ import com.mindeaseai.auth.AuthViewModel
 
 @Composable
 fun AIChatFlow(
-    userName: String? = null,
-    onLogout: (() -> Unit)? = null
+    userName: String? = null
 ) {
     val geminiViewModel: GeminiViewModel = hiltViewModel()
     val messages by geminiViewModel.messages.collectAsState()
@@ -28,7 +27,6 @@ fun AIChatFlow(
         isLoading = isLoading,
         errorMessage = error,
         showGreeting = showGreeting,
-        userName = userName,
-        onLogout = onLogout
+        userName = userName
     )
 }

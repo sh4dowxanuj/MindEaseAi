@@ -35,7 +35,6 @@ fun AIChatLog(
     messages: List<Pair<String, String>>,
     showGreeting: Boolean = false,
     userName: String? = null,
-    onLogout: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val listState = rememberLazyListState()
@@ -78,14 +77,6 @@ fun AIChatLog(
                         ChatBubble(text = ai, isUser = false)
                     }
                 }
-            }
-        }
-        if (onLogout != null) {
-            OutlinedButton(
-                onClick = onLogout,
-                modifier = Modifier.align(Alignment.End).padding(8.dp)
-            ) {
-                Text("Logout")
             }
         }
     }
