@@ -39,9 +39,13 @@ fun AppNavigation() {
     // Setup Google Sign-In launcher
     val context = LocalContext.current
     val defaultWebClientId = context.resources.getString(com.mindeaseai.R.string.default_web_client_id)
-    val gso = com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
-        com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
-    ).requestIdToken(defaultWebClientId).requestEmail().build()
+    // Build Google Sign-In options requesting the ID token for Firebase auth.
+    // Note: default_web_client_id must correspond to the Web client (OAuth type 3) in google-services.json
+    val gso = remember(defaultWebClientId) {
+        com.google.android.gms.auth.api.signin.GoogleSignInOptions.Builder(
+            com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN
+        ).requestIdToken(defaultWebClientId).requestEmail().build()
+    }
     val googleSignInClient = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(context, gso)
 
     val googleLauncher = rememberLauncherForActivityResult(
@@ -54,11 +58,22 @@ fun AppNavigation() {
             if (!idToken.isNullOrEmpty()) {
                 authViewModel.loginWithGoogle(idToken)
             } else {
-                // Surface a helpful error message to the UI
-                authViewModel.setError("Google sign-in did not return an ID token.")
+                authViewModel.setError("Google sign-in returned no ID token. (Check that you used the WEB client ID)")
             }
+        } catch (e: com.google.android.gms.common.api.ApiException) {
+            val code = e.statusCode
+            val msg = when (code) {
+                com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes.SIGN_IN_CANCELLED -> "Google sign-in was cancelled."
+                com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes.NETWORK_ERROR -> "Network error during Google sign-in. Check your connection."
+                com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes.DEVELOPER_ERROR -> "Google sign-in configuration error (SHA-1 / OAuth client mismatch or provider not enabled)."
+                com.google.android.gms.auth.api.signin.GoogleSignInStatusCodes.SIGN_IN_FAILED -> "Google sign-in failed. Try again."
+                12500 /* Common DEVELOPER_ERROR for Firebase */ -> "Configuration error (often missing SHA-1 or not using web client ID)."
+                else -> "Google sign-in error code $code."
+            }
+            android.util.Log.e("AppNavigation", "Google sign-in failed (code=$code)", e)
+            authViewModel.setError(msg)
         } catch (e: Exception) {
-            android.util.Log.e("AppNavigation", "Google sign-in failed", e)
+            android.util.Log.e("AppNavigation", "Google sign-in failed (unexpected)", e)
             authViewModel.setError("Google sign-in failed: ${e.message ?: "Unknown error"}")
         }
     }

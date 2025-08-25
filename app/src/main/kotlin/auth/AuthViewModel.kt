@@ -83,7 +83,12 @@ class AuthViewModel @Inject constructor(
             _loading.value = true
             try {
                 val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(credential).await()
+                val result = auth.signInWithCredential(credential).await()
+                val user = result.user
+                android.util.Log.d(
+                    "AuthViewModel",
+                    "Google sign-in success: uid=${user?.uid}, email=${user?.email}, name=${user?.displayName}, providers=${user?.providerData?.joinToString { it.providerId }}"
+                )
                 _authState.value = true
                 _error.value = null
             } catch (e: Exception) {
