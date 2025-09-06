@@ -83,15 +83,7 @@ fun DashboardScreen(
                     ) {
                         Text("Journal")
                     }
-                    Spacer(modifier = Modifier.height(32.dp))
-                    OutlinedButton(
-                        onClick = onLogout,
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = MaterialTheme.shapes.large,
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
-                    ) {
-                        Text("Logout")
-                    }
+                    // Removed duplicate bottom logout button; logout now only in the TopAppBar actions
                 }
             }
         }

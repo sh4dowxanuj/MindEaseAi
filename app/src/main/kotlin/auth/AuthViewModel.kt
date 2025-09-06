@@ -24,6 +24,15 @@ class AuthViewModel @Inject constructor(
     val error: StateFlow<String?> = _error
     private val _loading = MutableStateFlow<Boolean>(false)
     val loading: StateFlow<Boolean> = _loading
+    private val _lastEmail = MutableStateFlow<String?>(null)
+    val lastEmail: StateFlow<String?> = _lastEmail
+
+    fun updateTypedEmail(email: String) {
+        _lastEmail.value = email
+        if (_error.value != null) _error.value = null // clear stale error on user input
+    }
+
+    fun clearError() { _error.value = null }
 
     fun login(email: String, password: String) {
         if (_loading.value) return
@@ -42,6 +51,7 @@ class AuthViewModel @Inject constructor(
                 auth.signInWithEmailAndPassword(email, password).await()
                 _authState.value = true
                 _error.value = null
+                _lastEmail.value = email
             } catch (e: Exception) {
                 _error.value = parseAuthException(e)
             } finally {
@@ -67,6 +77,7 @@ class AuthViewModel @Inject constructor(
                 auth.createUserWithEmailAndPassword(email, password).await()
                 _authState.value = true
                 _error.value = null
+                _lastEmail.value = email
             } catch (e: Exception) {
                 _error.value = parseAuthException(e)
             } finally {
@@ -130,5 +141,7 @@ class AuthViewModel @Inject constructor(
     fun logout() {
         auth.signOut()
         _authState.value = false
+        _error.value = null
+        // Google revoke/cleanup handled externally where context/client available
     }
 }

@@ -96,7 +96,10 @@ fun AppNavigation() {
                 onSignup = { navController.navigate("signup") },
                 onGoogleSignIn = { googleLauncher.launch(googleSignInClient.signInIntent) },
                 errorMessage = error,
-                loading = loading
+                loading = loading,
+                lastEmail = authViewModel.lastEmail.collectAsState().value,
+                onEmailInput = { authViewModel.updateTypedEmail(it) },
+                onClearError = { authViewModel.clearError() }
             )
         }
         composable("signup") {
@@ -108,19 +111,25 @@ fun AppNavigation() {
             )
         }
         composable("dashboard") {
-            val authVm: com.mindeaseai.auth.AuthViewModel = hiltViewModel()
+            // Reuse the top-level authViewModel so auth state updates propagate to navigation effect
             DashboardScreen(
                 onNavigate = { navController.navigate(it) },
                 errorMessage = error,
                 onLogout = {
-                    // Sign out from Firebase
-                    authVm.logout()
+                    authViewModel.logout()
                     try {
-                        // Also sign out Google client to prevent silent auto-login
                         googleSignInClient.signOut()
                     } catch (e: Exception) {
                         android.util.Log.w("AppNavigation", "Google signOut failed: ${e.message}")
                     }
+                    // Force immediate navigation + clear back stack as a fallback in case state observer delay
+                    navController.navigate("login") {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                    // Debug log to confirm FirebaseAuth state
+                    val current = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser
+                    android.util.Log.d("AppNavigation", "Logout pressed; currentUser now = ${current?.uid ?: "null"}")
                 }
             )
         }

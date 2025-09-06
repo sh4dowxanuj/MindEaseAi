@@ -15,9 +15,12 @@ fun LoginScreen(
     onSignup: () -> Unit,
     onGoogleSignIn: () -> Unit,
     errorMessage: String?,
-    loading: Boolean
+    loading: Boolean,
+    lastEmail: String? = null,
+    onEmailInput: (String) -> Unit = {},
+    onClearError: () -> Unit = {}
 ) {
-    var email by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf(lastEmail ?: "") }
     var password by remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(errorMessage) {
@@ -50,7 +53,11 @@ fun LoginScreen(
                 ) {
                     OutlinedTextField(
                         value = email,
-                        onValueChange = { email = it },
+                        onValueChange = {
+                            email = it
+                            onEmailInput(it)
+                            onClearError()
+                        },
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
@@ -58,17 +65,21 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = password,
-                        onValueChange = { password = it },
+                        onValueChange = {
+                            password = it
+                            if (!errorMessage.isNullOrBlank()) onClearError()
+                        },
                         label = { Text("Password") },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(24.dp))
+                    val canSubmit = !loading && email.isNotBlank() && password.length >= 6
                     Button(
-                        onClick = { onLogin(email, password) },
+                        onClick = { if (canSubmit) onLogin(email, password) },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !loading,
+                        enabled = canSubmit,
                         shape = MaterialTheme.shapes.large
                     ) {
                         if (loading) {
