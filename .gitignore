@@ -34,9 +34,6 @@ Thumbs.db
 # Ignore all build artifacts
 /app/build/*
 # Un-ignore APK outputs for all variants under app/build/outputs/apk
-!/app/build/outputs/
-!/app/build/outputs/apk/
-!/app/build/outputs/apk/**
 # Ignore all other APKs everywhere else
 *.ap_ 
 *.dex
@@ -91,3 +88,6 @@ obj/
 .gitignore
 .env
 .env
+app/build/outputs/mapping/
+app/build/outputs/logs/
+app/build/outputs/sdk-dependencies/

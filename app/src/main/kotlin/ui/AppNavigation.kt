@@ -111,8 +111,7 @@ fun AppNavigation() {
             val authVm: com.mindeaseai.auth.AuthViewModel = hiltViewModel()
             DashboardScreen(
                 onNavigate = { navController.navigate(it) },
-                errorMessage = error,
-                onLogout = { authVm.logout() }
+                errorMessage = error
             )
         }
         composable("ai_chat") {
