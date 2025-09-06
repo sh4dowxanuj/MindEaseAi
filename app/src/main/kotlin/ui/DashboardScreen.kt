@@ -11,7 +11,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun DashboardScreen(
     onNavigate: (String) -> Unit,
-    errorMessage: String? = null
+    errorMessage: String? = null,
+    onLogout: () -> Unit = {}
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(errorMessage) {
@@ -21,7 +22,13 @@ fun DashboardScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("MindEaseAi", style = MaterialTheme.typography.headlineSmall) }
+                title = { Text("MindEaseAi", style = MaterialTheme.typography.headlineSmall) },
+                actions = {
+                    // Simple logout text button (could be replaced with IconButton for an icon)
+                    TextButton(onClick = onLogout) {
+                        Text("Logout")
+                    }
+                }
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -75,6 +82,15 @@ fun DashboardScreen(
                         shape = MaterialTheme.shapes.large
                     ) {
                         Text("Journal")
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                    OutlinedButton(
+                        onClick = onLogout,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    ) {
+                        Text("Logout")
                     }
                 }
             }

@@ -10,6 +10,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.horizontalScroll
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -43,15 +47,21 @@ fun MoodTrackerScreen(
         ) {
             Text("How are you feeling today?", style = MaterialTheme.typography.headlineMedium)
             Spacer(modifier = Modifier.height(16.dp))
-            Row {
-                moods.forEachIndexed { index, emoji ->
+            // Use a horizontally scrollable row so all emoji are always reachable on narrow screens
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                itemsIndexed(moods) { index, emoji ->
+                    val selected = selectedMood == index
                     OutlinedButton(
                         onClick = { onMoodSelected(index, note) },
+                        modifier = Modifier,
+                        shape = MaterialTheme.shapes.medium,
                         colors = ButtonDefaults.outlinedButtonColors(
-                            containerColor = if (selectedMood == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
+                            containerColor = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.15f) else MaterialTheme.colorScheme.surface
                         ),
-                        modifier = Modifier.padding(8.dp),
-                        shape = MaterialTheme.shapes.medium
+                        border = if (selected) ButtonDefaults.outlinedButtonBorder.copy(width = 2.dp) else ButtonDefaults.outlinedButtonBorder
                     ) {
                         Text(emoji, style = MaterialTheme.typography.headlineLarge)
                     }

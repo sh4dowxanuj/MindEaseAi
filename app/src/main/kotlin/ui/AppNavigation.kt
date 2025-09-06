@@ -111,7 +111,17 @@ fun AppNavigation() {
             val authVm: com.mindeaseai.auth.AuthViewModel = hiltViewModel()
             DashboardScreen(
                 onNavigate = { navController.navigate(it) },
-                errorMessage = error
+                errorMessage = error,
+                onLogout = {
+                    // Sign out from Firebase
+                    authVm.logout()
+                    try {
+                        // Also sign out Google client to prevent silent auto-login
+                        googleSignInClient.signOut()
+                    } catch (e: Exception) {
+                        android.util.Log.w("AppNavigation", "Google signOut failed: ${e.message}")
+                    }
+                }
             )
         }
         composable("ai_chat") {

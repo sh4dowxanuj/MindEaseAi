@@ -6,9 +6,11 @@ import androidx.lifecycle.viewModelScope
 import com.mindeaseai.data.JournalDao
 import com.mindeaseai.data.JournalEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -22,13 +24,25 @@ class JournalViewModel @Inject constructor(
     
     fun searchJournals(query: String) {
         viewModelScope.launch {
-            _journals.value = journalDao.searchJournals("%$query%")
+            try {
+                val result = withContext(Dispatchers.IO) { journalDao.searchJournals("%$query%") }
+                _journals.value = result
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "searchJournals failed", e)
+                _error.value = "Search failed."
+            }
         }
     }
 
     fun filterJournalsByMood(mood: String?) {
         viewModelScope.launch {
-            _journals.value = if (mood.isNullOrEmpty()) journalDao.getAllJournals() else journalDao.getAllJournals().filter { it.mood == mood }
+            try {
+                val all = withContext(Dispatchers.IO) { journalDao.getAllJournals() }
+                _journals.value = if (mood.isNullOrEmpty()) all else all.filter { it.mood == mood }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "filterJournalsByMood failed", e)
+                _error.value = "Filter failed."
+            }
         }
     }
     private val _journalText = MutableStateFlow("")
@@ -57,20 +71,23 @@ class JournalViewModel @Inject constructor(
                     _error.value = "Please write something before saving."
                     return@launch
                 }
-                journalDao.insertJournal(
-                    JournalEntry(
-                        text = _journalText.value,
-                        timestamp = System.currentTimeMillis(),
-                        mood = _journalMood.value,
-                        sentiment = _journalSentiment.value
+                withContext(Dispatchers.IO) {
+                    journalDao.insertJournal(
+                        JournalEntry(
+                            text = _journalText.value,
+                            timestamp = System.currentTimeMillis(),
+                            mood = _journalMood.value,
+                            sentiment = _journalSentiment.value
+                        )
                     )
-                )
+                }
                 _journalText.value = ""
                 _journalMood.value = null
                 _journalSentiment.value = null
                 _error.value = null
                 loadJournals()
             } catch (e: Exception) {
+                android.util.Log.e(TAG, "saveJournal failed", e)
                 _error.value = "Failed to save journal entry. Please try again."
             }
         }
@@ -79,11 +96,15 @@ class JournalViewModel @Inject constructor(
     fun loadJournals() {
         viewModelScope.launch {
             try {
-                _journals.value = journalDao.getAllJournals()
+                val list = withContext(Dispatchers.IO) { journalDao.getAllJournals() }
+                _journals.value = list
                 _error.value = null
             } catch (e: Exception) {
+                android.util.Log.e(TAG, "loadJournals failed", e)
                 _error.value = "Failed to load journal entries."
             }
         }
     }
+
+    companion object { private const val TAG = "JournalViewModel" }
 }
